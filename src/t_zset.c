@@ -420,17 +420,23 @@ unsigned long zslDeleteRangeByRank(zskiplist *zsl, unsigned int start, unsigned 
  * first element. */
 unsigned long zslGetRank(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *x;
-    unsigned long rank = 0;
+    unsigned long rank = 1;
     int i;
 
     x = zsl->header;
     for (i = zsl->level-1; i >= 0; i--) {
-        while (x->level[i].forward &&
-            (x->level[i].forward->score < score ||
-                (x->level[i].forward->score == score &&
-                sdscmp(x->level[i].forward->ele,ele) <= 0))) {
-            rank += x->level[i].span;
-            x = x->level[i].forward;
+        while (x->level[0].forward
+               && (x->level[0].forward->score < score
+                   || (x->level[0].forward->score == score
+                       && sdscmp(x->level[0].forward->ele,ele) <= 0))) {
+            // New logic
+            if (x->level[0].forward->score < score) {
+                rank += 1;
+            }
+
+            // Old logic
+            //rank += x->level[i].span;
+            x = x->level[0].forward;
         }
 
         /* x might be equal to zsl->header, so test if obj is non-NULL */
