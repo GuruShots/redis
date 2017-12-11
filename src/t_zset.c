@@ -421,16 +421,16 @@ unsigned long zslDeleteRangeByRank(zskiplist *zsl, unsigned int start, unsigned 
 unsigned long zslGetRank(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *x;
     unsigned long rank = 1;
-    int i;
+//    int i;
 
     x = zsl->header;
-    for (i = zsl->level-1; i >= 0; i--) {
+//    for (i = zsl->level-1; i >= 0; i--) {
         while (x->level[0].forward
                && (x->level[0].forward->score < score
-                   || (x->level[0].forward->score == score
-                       && sdscmp(x->level[0].forward->ele,ele) <= 0))) {
+                   || (x->level[0].forward->score == score && sdscmp(x->level[0].forward->ele,ele) <= 0))) {
+
             // New logic
-            if (x->level[0].forward->score < score) {
+            if (x->level[0].forward->score < score && (x->score != x->level[0].forward->score)) {
                 rank += 1;
             }
 
@@ -443,8 +443,31 @@ unsigned long zslGetRank(zskiplist *zsl, double score, sds ele) {
         if (x->ele && sdscmp(x->ele,ele) == 0) {
             return rank;
         }
-    }
+//    }
     return 0;
+}
+
+/* Find the rank for an element by both score and key.
+ * Returns 0 when the element cannot be found, rank otherwise.
+ * Note that the rank is 1-based due to the span of zsl->header to the
+ * first element. */
+unsigned long zslGetRevRank(zskiplist *zsl, double score, sds ele) {
+    zskiplistNode *x;
+    unsigned long rank = 1;
+
+    x = zsl->tail;
+
+    while (x && (x->score > score || (x->score == score && sdscmp(x->ele,ele) <= 0)))
+    {
+
+        if ((x->score > score) && (x->score > x->backward->score)) {
+            rank += 1;
+        }
+
+        x = x->backward;
+    }
+
+    return rank;
 }
 
 /* Finds an element by its rank. The rank argument needs to be 1-based. */
@@ -1469,13 +1492,10 @@ long zsetRank(robj *zobj, sds ele, int reverse) {
         de = dictFind(zs->dict,ele);
         if (de != NULL) {
             score = *(double*)dictGetVal(de);
-            rank = zslGetRank(zsl,score,ele);
+            rank = (!reverse) ? zslGetRank(zsl,score,ele) : zslGetRevRank(zsl,score,ele);
             /* Existing elements always have a rank. */
             serverAssert(rank != 0);
-            if (reverse)
-                return llen-rank;
-            else
-                return rank-1;
+            return rank - 1;
         } else {
             return -1;
         }
