@@ -44,16 +44,8 @@
 - name: Ensure Redis is running and enabled on boot.
   service: "name={{ redis_daemon }} state=started enabled=yes"
 
-- name: Test for overcommit_memory line
-  shell: grep "vm.overcommit_memory = 1" /etc/sysctl.conf
-  register: test_overcommit_memory
-
-- debug: msg="test_overcommit_memory {{ test_overcommit_memory.stdout }}"
-
-# WARNING overcommit_memory is set to 0! Background save may fail under low memory condition.
-- name: add overcommit_memory to sysctl
-  lineinfile: dest=/etc/sysctl.conf line="vm.overcommit_memory = 1"
-  when: test_overcommit_memory.stdout.find('vm.overcommit_memory') != -1
+- name: add a vm.overcommit_memory setting at the end of the sysctl.conf
+  sysctl: name=vm.overcommit_memory value=1 state=present reload=yes
 
 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis
 - name: update init script
