@@ -50,7 +50,7 @@ redis_dbdir: /var/lib/redis
 #### Redis memory limit (e.g. 4294967296, 4096mb, 4gb)
 #redis_maxmemory: 0
 #redis_maxmemory: false
-redis_maxmemory: 55gb
+redis_maxmemory: 110gb
 
 # allkeys-lru: the service evicts the least recently used keys out of all keys
 # allkeys-random: the service randomly evicts keys out of all keys
