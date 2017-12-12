@@ -422,48 +422,42 @@ unsigned long zslGetRank(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *x;
     unsigned long rank = 1;
 //    int i;
+//    for (i = zsl->level-1; i >= 0; i--) {
+//    }
 
     x = zsl->header;
-//    for (i = zsl->level-1; i >= 0; i--) {
-        while (x->level[0].forward
-               && (x->level[0].forward->score < score
-                   || (x->level[0].forward->score == score && sdscmp(x->level[0].forward->ele,ele) <= 0))) {
+    while (x->level[0].forward
+           && (x->level[0].forward->score < score
+               || (x->level[0].forward->score == score && sdscmp(x->level[0].forward->ele,ele) <= 0))) {
 
-            // New logic
-            if (x->level[0].forward->score < score && (x->score != x->level[0].forward->score)) {
-                rank += 1;
-            }
-
-            // Old logic
-            //rank += x->level[i].span;
-            x = x->level[0].forward;
+        if (x->level[0].forward->score < score && (x->score != x->level[0].forward->score)) {
+            rank += 1;
         }
 
-        /* x might be equal to zsl->header, so test if obj is non-NULL */
-        if (x->ele && sdscmp(x->ele,ele) == 0) {
-            return rank;
-        }
-//    }
+        x = x->level[0].forward;
+    }
+
+    /* x might be equal to zsl->header, so test if obj is non-NULL */
+    if (x->ele && sdscmp(x->ele,ele) == 0) {
+        return rank;
+    }
+
     return 0;
 }
 
-/* Find the rank for an element by both score and key.
- * Returns 0 when the element cannot be found, rank otherwise.
- * Note that the rank is 1-based due to the span of zsl->header to the
- * first element. */
+/* A speical "reverse" version of zslGetRank()
+ * it starts for ziplist's last element and going down the main tree
+ * via the 'backwards' element of x */
 unsigned long zslGetRevRank(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *x;
     unsigned long rank = 1;
 
     x = zsl->tail;
 
-    while (x && (x->score > score || (x->score == score && sdscmp(x->ele,ele) <= 0)))
-    {
-
+    while (x && (x->score > score || (x->score == score && sdscmp(x->ele,ele) <= 0))) {
         if ((x->score > score) && (x->score > x->backward->score)) {
             rank += 1;
         }
-
         x = x->backward;
     }
 
