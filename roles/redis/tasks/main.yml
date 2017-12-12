@@ -7,14 +7,9 @@
   set_fact:
     redis_package: "{{ __redis_package }}"
   when: redis_package is not defined
-- name: Download custom build of redis
-  get_url:
-    url: "https://s3.amazonaws.com/guru-packages/redis_4.0.0_amd64.deb"
-    dest: /opt/redis_4.0.0_amd64.deb
 - name: Ensure Redis is installed.
   apt:
-    name: "{{ redis_package }}"
-    state: present
+    deb: "https://s3.amazonaws.com/guru-packages/redis_4.0.0_amd64.deb"
 - name: Ensure Redis is configured.
   template:
     src: redis.conf.j2
