@@ -1,0 +1,60 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}"
+  },
+  "builders": [
+    {
+      "type": "amazon-instance",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "eu-central-1",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "instance_type": "r4.4xlarge",
+      "ssh_username": "ubuntu",
+      "ami_name": "redis.ranking.staging.ff.gurushots.com-{{timestamp}}",
+      "tags": {
+        "Name": "redis.ranking.staging.ff.gurushots.com-{{timestamp}}"
+      },
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_size": 100,
+          "volume_type": "gp2",
+          "delete_on_termination": true
+        }
+      ],
+      "ami_block_device_mappings": [
+        {
+          "device_name": "/dev/xvdf",
+          "volume_size": 500,
+          "delete_on_termination": true
+        }
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+        "type": "shell",
+        "inline": [
+            "sudo pip install ansible"
+        ]
+    },
+    {
+        "type": "ansible-local",
+        "playbook_file": "playbooks/redis-custom.yaml",
+        "role_paths": [
+            "roles/redis",
+            "roles/sudoers",
+            "roles/ulimit"
+        ]
+    }
+}

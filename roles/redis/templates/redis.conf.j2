@@ -1,0 +1,56 @@
+# {{ ansible_managed }}
+
+# General
+daemonize {{ redis_daemonize }}
+pidfile {{ redis_pidfile }}
+port {{ redis_port }}
+bind {{ redis_bind_interface }}
+dir {{ redis_dbdir }}
+{% if redis_unixsocket %}
+unixsocket {{ redis_unixsocket }}
+{% endif %}
+timeout {{ redis_timeout }}
+tcp-keepalive {{ redis_tcp_keepalive }}
+tcp-backlog {{ redis_tcp_backlog }}
+loglevel {{ redis_loglevel }}
+logfile {{ redis_logfile }}
+
+# Security
+{% if redis_password -%}
+masterauth {{ redis_password }}
+{% endif -%}
+
+{% if redis_password -%}
+requirepass {{ redis_password }}
+{% endif -%}
+
+{% for command in redis_rename_commands -%}
+rename-command {{ command }}
+{% endfor -%}
+
+databases {{ redis_databases }}
+
+{% for save in redis_save %}
+save {{ save }}
+{% endfor %}
+
+rdbcompression {{ redis_rdbcompression }}
+dbfilename {{ redis_dbfilename }}
+
+# Limits
+maxclients {{ redis_maxclients }}
+{% if redis_maxmemory -%}
+maxmemory {{ redis_maxmemory }}
+{% endif -%}
+maxmemory-policy {{ redis_maxmemory_policy }}
+
+appendonly {{ redis_appendonly }}
+appendfsync {{ redis_appendfsync }}
+
+no-appendfsync-on-rewrite {{ redis_no_appendfsync_on_rewrite }}
+
+{% for include in redis_includes %}
+include {{ include }}
+{% endfor %}
+
+lua-time-limit {{ redis_lua_time_limit }}

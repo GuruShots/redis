@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  gather_facts: True
+  remote_user: ubuntu
+  become: yes
+  become_user: root
+  become_method: sudo
+  vars:
+    __redis_package: "deb=/opt/redis_4.0.0_amd64.deb"
+    redis_custom: true
+  tasks:
+  - name: starting playbook
+    shell: "echo starting playbook"
+ 
+  - name: show inventory_hostname
+    debug: msg="inventory_hostname is {{ inventory_hostname }}"
+
+  - name: show inventory_hostname_short 
+    debug: msg="inventory_hostname is {{ inventory_hostname_short }}"
+
+  - name: Make sure that we can connect to the machine
+    ping:
+
+  roles:
+    - { role: 'sudoers', tags: 'sudoers' }
+    - { role: 'ulimit', tags: 'ulimit' }
+    - { role: 'redis', tags: 'redis' }

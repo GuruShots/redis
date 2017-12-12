@@ -1,0 +1,70 @@
+---
+# Variable setup.
+- name: Include OS-specific variables.
+  include_vars: "main.yml"
+
+- name: Define redis_package.
+  set_fact:
+    redis_package: "{{ __redis_package }}"
+  when: redis_package is not defined
+- name: Download custom build of redis
+  get_url:
+    url: "https://s3.amazonaws.com/guru-packages/redis_4.0.0_amd64.deb"
+    dest: /opt/redis_4.0.0_amd64.deb
+- name: Ensure Redis is installed.
+  apt:
+    name: "{{ redis_package }}"
+    state: present
+- name: Ensure Redis is configured.
+  template:
+    src: redis.conf.j2
+    dest: "{{ redis_conf_path }}"
+    mode: 0644
+  notify: restart redis
+
+- name: /etc/default/redis-server conf file
+  template:
+    src: redis-server.j2
+    dest: /etc/default/redis-server
+    mode: 0644
+  notify: restart redis
+
+- name: Ensure redis service is configured.
+  template:
+    src: redis-server.service.j2
+    dest: /lib/systemd/system/redis-server.service
+    mode: 0644
+  notify: restart redis
+  register: redis_service_changed
+
+- name: sudo systemctl daemon-reload
+  command: sudo systemctl daemon-reload
+  when: redis_service_changed.changed
+
+- name: Ensure Redis is running and enabled on boot.
+  service: "name={{ redis_daemon }} state=started enabled=yes"
+
+- name: Test for overcommit_memory line
+  shell: grep "vm.overcommit_memory = 1" /etc/sysctl.conf
+  register: test_overcommit_memory
+
+- debug: msg="test_overcommit_memory {{ test_overcommit_memory.stdout }}"
+
+# WARNING overcommit_memory is set to 0! Background save may fail under low memory condition.
+- name: add overcommit_memory to sysctl
+  lineinfile: dest=/etc/sysctl.conf line="vm.overcommit_memory = 1"
+  when: test_overcommit_memory.stdout.find('vm.overcommit_memory') != -1
+
+# WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis
+- name: update init script
+  template:
+    src: rc.local.j2
+    dest: /etc/rc.local
+    owner: root
+    group: root
+    mode: 0755
+    validate: '/usr/bin/env sh -n %s'
+  notify: execute rc.local
+  tags:
+    - rc-local
+    - rc-local-init

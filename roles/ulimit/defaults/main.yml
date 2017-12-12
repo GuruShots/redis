@@ -1,0 +1,10 @@
+---
+ulimit_folder: "/etc/security/limits.d/"
+ulimit_config: []
+
+system_limits:
+  ulimits:
+    - 'root soft nofile 300000'
+    - 'root hard nofile 300000'
+    - '* soft nofile 300000'
+    - '* hard nofile 300000'

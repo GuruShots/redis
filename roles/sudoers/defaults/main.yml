@@ -1,0 +1,5 @@
+---
+sudoers_cfg_file: /etc/sudoers
+sudoers_dir: /etc/sudoers.d
+sudoers_pkgs:
+  - sudo

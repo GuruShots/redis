@@ -1,0 +1,115 @@
+---
+
+redis_conf_path: /etc/redis/redis.conf
+__redis_package: redis-server
+redis_daemon: redis-server
+
+redis_daemonize: "yes"
+
+redis_port: 6379
+redis_service_name: "redis_{{ redis_port }}"
+redis_pidfile: /var/run/redis/{{ redis_port }}.pid
+redis_bind_interface: 0.0.0.0
+redis_unixsocket: /var/run/redis/{{ redis_port }}.sock
+redis_timeout: 0
+redis_loglevel: "notice"
+redis_logfile: /var/log/redis/redis-server.log
+redis_tcp_keepalive: 0
+
+# In high requests-per-second environments you need an high backlog in order
+# to avoid slow clients connections issues. Note that the Linux kernel
+# will silently truncate it to the value of /proc/sys/net/core/somaxconn so
+# make sure to raise both the value of somaxconn and tcp_max_syn_backlog
+# in order to get the desired effect.
+redis_tcp_backlog: 511
+
+# Syslog facility. Must be USER or LOCAL0-LOCAL7
+redis_syslog_facility: USER
+redis_syslog_enabled: "yes"
+redis_syslog_ident: "{{ redis_service_name }}"
+
+redis_password: WrHG3Y3MxbVX
+redis_maxclients: 2032
+
+#### Number of databases to allow
+redis_databases: 16
+
+# How frequently to snapshot the database to disk
+#   after 900 sec (15 min) if at least 1 key changed
+#   after 300 sec (5 min) if at least 10 keys changed
+#   after 60 sec if at least 10000 keys changed
+redis_save:
+  - 900 1000
+  - 300 10000
+  - 60 10000000
+
+redis_rdbcompression: "yes"
+redis_dbfilename: dump.rdb
+redis_dbdir: /var/lib/redis
+
+#### Redis memory limit (e.g. 4294967296, 4096mb, 4gb)
+#redis_maxmemory: 0
+#redis_maxmemory: false
+redis_maxmemory: 55gb
+
+# allkeys-lru: the service evicts the least recently used keys out of all keys
+# allkeys-random: the service randomly evicts keys out of all keys
+# volatile-lru: the service evicts the least recently used keys out of all keys with an "expire" field set
+# volatile-ttl: the service evicts the shortest time to live keys (out of all keys with an "expire" field set)
+# volatile-random: the service randomly evicts keys with an "expire" field set
+# no-eviction: the service will not evict any keys and no writes will be possible until morememory is freed
+redis_maxmemory_policy: "volatile-lru"
+#redis_maxmemory_policy: "noeviction"
+
+# when Redis is using more than the configured max memory setting, it needs to evict some key.
+# in order to do so it selects N random keys, and checks the one with the older LRU timestamp. This key is removed.
+# redis selects *N* random keys. That "N" is exactly the maxmemory-samples parameter, that is set to three by default.
+redis_maxmemory_samples: 5
+
+redis_appendonly: "no"
+
+# If you cannot afford losing any sessions, set appendfsync always in your configuration file. 
+# With this, Redis guarantees that any write operations are saved to the disk. The disadvantage is that write operations will be slower.
+# If you are okay with losing about 1s worth of data, use appendfsync everysec. This will give great performance with reasonable data guarantees
+#redis_appendfsync: "always"
+redis_appendfsync: "everysec"
+
+# When the AOF fsync policy is set to always or everysec, and a background
+# saving process (a background save or AOF log background rewriting) is
+# performing a lot of I/O against the disk, in some Linux configurations
+# Redis may block too long on the fsync() call. Note that there is no fix for
+# this currently, as even performing fsync in a different thread will block
+# our synchronous write(2) call.
+#
+# In order to mitigate this problem it's possible to use the following option
+# that will prevent fsync() from being called in the main process while a
+# BGSAVE or BGREWRITEAOF is in progress.
+#
+# This means that while another child is saving, the durability of Redis is
+# the same as "appendfsync none". In practical terms, this means that it is
+# possible to lose up to 30 seconds of log in the worst scenario (with the
+# default Linux settings).
+#
+# If you have latency problems turn this to "yes". Otherwise leave it as
+# "no" that is the safest pick from the point of view of durability.
+redis_no_appendfsync_on_rewrite: "no"
+
+# Add extra include files for local configuration/overrides.
+redis_includes: []
+redis_rename_commands: []
+
+# Max execution time of a Lua script in milliseconds.
+#
+# If the maximum execution time is reached Redis will log that a script is
+# still in execution after the maximum allowed time and will start to
+# reply to queries with an error.
+#
+# When a long running script exceeds the maximum execution time only the
+# SCRIPT KILL and SHUTDOWN NOSAVE commands are available. The first can be
+# used to stop a script that did not yet called write commands. The second
+# is the only way to shut down the server in the case a write command was
+# already issued by the script but the user doesn't want to wait for the natural
+# termination of the script.
+#
+# Set it to 0 or a negative value for unlimited execution without warnings.
+redis_lua_time_limit: "0"

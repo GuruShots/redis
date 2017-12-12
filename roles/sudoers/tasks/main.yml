@@ -1,0 +1,26 @@
+---
+- name: install susdo pkgs...
+  become: yes
+  become_user: root
+  with_items: '{{sudoers_pkgs}}'
+  package:
+    name: '{{item}}'
+    state: present
+
+- name: sudo | enable sudoers.d
+  become: yes
+  lineinfile:
+    backup: yes
+    dest: /etc/sudoers
+    line: '#includedir /etc/sudoers.d'
+    state: present
+    validate: visudo -cf %s
+
+- user:
+    name: gurushots
+    shell: /bin/bash
+    groups: users
+    append: yes
+
+- name: creating sudoers configuration
+  template: src="etc/sudoers.d/ansible.j2" dest="/etc/sudoers.d/gurushots" owner=root group=root mode=0440
