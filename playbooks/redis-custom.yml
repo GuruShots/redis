@@ -6,7 +6,7 @@
   become_user: root
   become_method: sudo
   vars:
-    __redis_package: "deb=/opt/redis_4.0.0_amd64.deb"
+    redis_package: "deb=/opt/redis_4.0.0_amd64.deb"
     redis_custom: true
   tasks:
   - name: starting playbook
@@ -24,4 +24,4 @@
   roles:
     - { role: 'sudoers', tags: 'sudoers' }
     - { role: 'ulimit', tags: 'ulimit' }
-    - { role: 'redis', tags: 'redis' }
+    - { role: 'redis', tags: 'redis', redis_package: "deb=/opt/redis_4.0.0_amd64.deb" }
