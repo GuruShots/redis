@@ -102,15 +102,9 @@
     name: "redis-exporter"
     image: "oliver006/redis_exporter"
     pull: true
-    detach: "{{ detachFlag | default('true') }}"
-    cleanup: "{{ cleanupFlag | default('false') }}"
-    restart_policy: "{{ restartPolicy | default('always') }}"
+    detach: true
+    restart_policy: "always"
     state: started
     command: "-redis.addr=172.17.0.1:6379"
-    volumes: "{{ docker_node_volumes | default([]) }}"
-    etc_hosts: "{{ containerHosts | default() }}"
-    env: "{{ env | | default()}}"
-    dns_search_domains: "{{ dns_search_domains | | default() }}"
-    dns_servers: "{{ dns_servers | default() }}"
     published_ports:
       - "9121:9121"
