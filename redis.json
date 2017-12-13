@@ -13,7 +13,7 @@
         "filters": {
           "virtualization-type": "hvm",
           "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
-          "root-device-type": "ssd"
+          "root-device-type": "ebs"
         },
         "owners": ["099720109477"],
         "most_recent": true
@@ -36,6 +36,7 @@
         {
           "device_name": "/dev/xvdf",
           "volume_size": 500,
+          "volume_type": "gp2",
           "delete_on_termination": true
         }
       ]
