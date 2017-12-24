@@ -2884,16 +2884,18 @@ void zrankGenericCommand(client *c, int reverse) {
     robj *key = c->argv[1];
     robj *ele = c->argv[2];
     robj *zobj;
-    int unique = 0;
+    int unique = 1;
     unsigned long llen;
     unsigned long rank;
 
-    if (c->argc == 4 && !strcasecmp(c->argv[3]->ptr,"unique")) {
-        unique = 1;
-    } else if (c->argc >= 4) {
-        addReply(c,shared.syntaxerr);
-        return;
-    }
+    // THE 'UNIQUE' PARAMETER WILL BE ALWAYS 'ON'
+
+//    if (c->argc == 4 && !strcasecmp(c->argv[3]->ptr,"unique")) {
+//        unique = 1;
+//    } else if (c->argc >= 4) {
+//        addReply(c,shared.syntaxerr);
+//        return;
+//    }
 
     if ((zobj = lookupKeyReadOrReply(c,key,shared.nullbulk)) == NULL ||
         checkType(c,zobj,OBJ_ZSET)) return;
@@ -2908,9 +2910,9 @@ void zrankGenericCommand(client *c, int reverse) {
 
 if (reverse) {
             sptr = ziplistIndex(zl,-1);
-            redisAssertWithInfo(c,zobj,sptr != NULL);
+            serverAssertWithInfo(c,zobj,sptr != NULL);
             eptr = ziplistPrev(zl,sptr);
-            redisAssertWithInfo(c,zobj,eptr != NULL);
+            serverAssertWithInfo(c,zobj,eptr != NULL);
         } else {        eptr = ziplistIndex(zl,0);
         serverAssertWithInfo(c,zobj,eptr != NULL);
         sptr = ziplistNext(zl,eptr);
