@@ -405,7 +405,8 @@ static unsigned long _zslGetRank(zskiplist *zsl, double score, robj *o,
                     (unique && reverse)
             ))))
         {
-            rank += x->level[i].span;
+            // rank += x->level[i].span;
+            rank += 1;
             x = nextNode;
             nextNode=x->level[i].forward;
         }
